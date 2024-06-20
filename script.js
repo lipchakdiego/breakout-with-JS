@@ -70,6 +70,9 @@ for(let c = 0; c < brickColumnCount; c++){
 //Declare variable to track score
 let score = 0
 
+//Declare variable to track lives
+let lives = 3
+
 //Function to draw the ball on the canvas
 const drawBall = () => {
     ctx.beginPath()
@@ -108,6 +111,7 @@ const drawBricks = () => {
     }
 }
 
+
 const draw = () => {
     //Clears anything previously painted inside the rect
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -122,9 +126,18 @@ const draw = () => {
         if (x > paddleX && x < paddleX + paddleWidth) {
             dy = -dy
         } else {
-            alert('GAME OVER')
-            document.location.reload()
-            clearInterval(interval)
+            lives--;
+            if(!lives){
+                alert('GAME OVER')
+                document.location.reload()
+            }else{
+                x = canvas.width / 2
+                y = canvas.height - 30
+                dx = 2
+                dy = -2
+                paddleX = (canvas.width - paddleWidth) /2
+            }
+            
         }
 
     }
@@ -132,9 +145,11 @@ const draw = () => {
     //If right or left keys are pressed, move paddle position
     drawPaddle()
     drawScore()
+    drawLives()
     collisionDetection()
     if (rightPressed) { paddleX = Math.min(paddleX + 7, canvas.width - paddleWidth) }
     if (leftPressed) { paddleX = Math.max(paddleX - 7, 0) }
+    requestAnimationFrame(draw)
 }
 
 //Fires when a key is pressed down
@@ -155,6 +170,14 @@ const keyUpHandler = (e) => {
     }
 }
 
+//Anchors paddle movement to mouse location
+const mouseMoveHandler = (e) => {
+    const relativeX = e.clientX - canvas.offsetLeft
+    if(relativeX > 0 && relativeX < canvas.width){
+        paddleX = relativeX - paddleWidth / 2
+    }
+}
+
 //Collision detection for each brick in the array
 const collisionDetection = () => {
     for(let c = 0; c < brickColumnCount; c++){
@@ -168,7 +191,6 @@ const collisionDetection = () => {
                     if(score === brickColumnCount * brickRowCount){
                         alert('YOU WIN, CONGRATULATIONS!')
                         document.location.reload()
-                        clearInterval(interval)
                     }
                 }
             }
@@ -184,16 +206,25 @@ const drawScore = () => {
     ctx.fillText(`Score: ${score}`, 8, 20)
 }
 
+//Draws life counter on canvas
+const drawLives = () => {
+    ctx.font = '16px Ariel'
+    ctx.fillStyle = '#0095DD'
+    ctx.fillText(`Lives: ${lives}`, canvas.width - 65, 20)
+}
 
 //Event listeners for keydown and keyup
 document.addEventListener('keydown', keyDownHandler, false)
 document.addEventListener('keyup', keyUpHandler, false)
 
+//Event listener for mouse movement
+document.addEventListener('mousemove', mouseMoveHandler, false)
+
 
 
 //Runs when start game button is clicked and begins the drawing
 const startGame = () => {
-    interval = setInterval(draw, 10)
+    draw()
 }
 
 //Adds listenter to start game button
